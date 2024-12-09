@@ -217,11 +217,10 @@ sock.ev.on('connection.update', async (update) => {
 sock.ev.on("messages.upsert", async (cht) => {
     if (cht.messages.length === 0) return;
     const chatUpdate = cht.messages[0];
-    console.log(chatUpdate)
     if (!chatUpdate.message) return;
      messageQueue.add(chatUpdate);
-     
-     if (!messageQueue.isFirst(chatUpdate)) return messageQueue.unqueue(chatUpdate);
+  
+     if (!messageQueue.isFirst(chatUpdate)) return messageQueue.waitQueue(chatUpdate);
    while (!messageQueue.isEmpty()) {
         const message = messageQueue.first();
         try {
