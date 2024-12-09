@@ -24,17 +24,10 @@ module.exports = {
       await sock.sendFile(m.cht, a.author.avatar, null, cap, m);
       if (a.images) {
       for (let i of a.images) {
-<<<<<<< HEAD
-        await sock.sendFile(m.cht, i, null, "", m);
-        }
-      } else {
-      let q = await sock.sendFile(m.cht, a.play, null, "", m);
-=======
         await sock.sendFile(m.cht, i, null, cap, m);
         }
       } else {
       let q = await sock.sendFile(m.cht, a.play, null, cap, m);
->>>>>>> 8de5675 (v1.1.0)
       await sock.sendFile(m.cht, a.music_info.play, null, "", m, {
             mimetype: "audio/mpeg",
             contextInfo: {
@@ -47,14 +40,7 @@ module.exports = {
               }
           }
        })
-<<<<<<< HEAD
-      }
-    });   
-   }
-}
-=======
      }
     });   
    }
 }
->>>>>>> 8de5675 (v1.1.0)
