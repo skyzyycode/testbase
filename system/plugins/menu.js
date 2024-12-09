@@ -16,10 +16,7 @@ module.exports = {
     let matches = data.match(casePattern).map(match => match.replace(/case\s+"([^"]+)"/, '$1'));
      let menu = {};
     plugins.forEach(item => {
-<<<<<<< HEAD
       if (!item) item = ["other"]
-=======
->>>>>>> 8de5675 (v1.1.0)
       item.category.forEach(cat => {
          if (!menu[cat]) {
              menu[cat] = { command: [] };
@@ -88,8 +85,4 @@ Object.entries(menu).forEach(([tag, commands]) => {
          }
        })
     }
-<<<<<<< HEAD
 }
-=======
-}
->>>>>>> 8de5675 (v1.1.0)
