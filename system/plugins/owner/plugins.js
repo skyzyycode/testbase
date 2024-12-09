@@ -34,11 +34,7 @@ module.exports = {
          if (!m.quoted) throw "> Reply Plugins yang mau kamu simpan"
          let input = m.text.replace('--add', '').trim()
           try {
-<<<<<<< HEAD
-              let file = pg.directory + "/" + input + ".js"    
-=======
               let file = pg.directory + "/" + input
->>>>>>> 8de5675 (v1.1.0)
              fs.writeFileSync(file.trim(), m.quoted.body)
               m.reply("> Berhasil Menyimpan Plugins : " + input);
               } catch(e) {
