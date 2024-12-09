@@ -5,11 +5,6 @@ const {
     jidNormalizedUser,
     fetchLatestBaileysVersion,
     Browsers,
-<<<<<<< HEAD
-    makeInMemoryStore,
-    DisconnectReason,
-    getAggregateVotesInPollMessage
-=======
     proto,
     makeInMemoryStore,
     DisconnectReason,
@@ -17,7 +12,6 @@ const {
     generateWAMessage,
     getAggregateVotesInPollMessage,
    areJidsSameUser
->>>>>>> 8de5675 (v1.1.0)
 } = require("baileys");
 const pino = require('pino');
 const { Boom } = require('@hapi/boom');
@@ -26,24 +20,16 @@ const readline = require("node:readline");
 const serialize = require("./lib/serialize.js");
 const simple = require('./lib/simple.js')
 const fs = require("node:fs");
-<<<<<<< HEAD
-const Database = require("./lib/database.js");
-const config = require("./settings.js");
-=======
 const Queque = require("./lib/queque.js");
 const messageQueue = new Queque();
 const Database = require("./lib/database.js");
 const config = require("./settings.js");
 const append = require("./lib/append");
 
->>>>>>> 8de5675 (v1.1.0)
 const Func = require("./lib/function.js");
 const data = fs.readFileSync(process.cwd()+'/system/case.js', 'utf8');
 const casePattern = /case\s+"([^"]+)"/g;
 const matches = data.match(casePattern).map(match => match.replace(/case\s+"([^"]+)"/, '$1'));
-<<<<<<< HEAD
-    
-=======
 
 const appenTextMessage = async (m, sock, text, chatUpdate) => {
     let messages = await generateWAMessage(
@@ -68,7 +54,6 @@ const appenTextMessage = async (m, sock, text, chatUpdate) => {
     return sock.ev.emit("messages.upsert", msg);
 }
      
->>>>>>> 8de5675 (v1.1.0)
 const question = (text) => {
      const rl = readline.createInterface({
         input: process.stdin,
@@ -229,21 +214,15 @@ sock.ev.on('connection.update', async (update) => {
             conversation: "NekoBot"
         }
     }
-<<<<<<< HEAD
-  sock.ev.on('messages.update', async chatUpdate => {
-        for(const { key, update } of chatUpdate) {
-			if(update.pollUpdates && key.fromMe) {
-				const pollCreation = await getMessage(key)
-				if(pollCreation) {
-=======
 sock.ev.on("messages.upsert", async (cht) => {
     if (cht.messages.length === 0) return;
     const chatUpdate = cht.messages[0];
+    console.log(chatUpdate)
     if (!chatUpdate.message) return;
      messageQueue.add(chatUpdate);
-     if (!messageQueue.isFirst(chatUpdate)) return messageQueue.waitQueue(chatUpdate);
-      
-    while (!messageQueue.isEmpty()) {
+     
+     if (!messageQueue.isFirst(chatUpdate)) return messageQueue.unqueue(chatUpdate);
+   while (!messageQueue.isEmpty()) {
         const message = messageQueue.first();
         try {
             message.message = Object.keys(message.message)[0] === 'ephemeralMessage'
@@ -328,103 +307,14 @@ sock.ev.on("messages.upsert", async (cht) => {
       
 sock.ev.on('messages.update', async(chatUpdate) => {
         for (const { key, update } of chatUpdate) {
-           console.log(key)
 			if (update.pollUpdates && key.fromMe) {
 				const pollCreation = await getMessage(key)
 				const loadMsg = await store.loadMessage(m.key.remoteJid, m.key.id)
 				if (pollCreation) {
->>>>>>> 8de5675 (v1.1.0)
 				    const pollUpdate = await getAggregateVotesInPollMessage({
 							message: pollCreation,
 							pollUpdates: update.pollUpdates,
 						})
-<<<<<<< HEAD
-	                var toCmd = pollUpdate.filter(v => v.voters.length !== 0)[0]?.name
-	                 console.log(toCmd);
-				}
-			}
-		}
-    });
- sock.ev.on("messages.upsert", async(cht) => {
-    if (cht.messages.length === 0) return;
-     const chatUpdate = cht.messages[0];
-     if (!chatUpdate.message) return;
-   chatUpdate.message = (Object.keys(chatUpdate.message)[0] === 'ephemeralMessage') ? chatUpdate.message.ephemeralMessage.message : chatUpdate.message;
-     let m = await serialize(chatUpdate, sock, store);
-       if (m.key.jid === "status@broadcast") {
-         await sock.readMessage([m.key])
-         await sock.sendMessage(m.key.jid, {
-             react: {
-               text: "📸",
-               key: m.key          
-             }
-          }, {
-         statusJidList: Object.keys(store.contact)
-        });
-         console.log(chalk.grenn.bold("– Membaca Status WhatsApp dari : " + m.pushName))
-       }
-     await db.main(m);     
-     if (m.isBot) return;
-     if (db.list().settings.self && !m.isOwner) return 
-     if (m.isGroup && db.list().group[m.cht].mute && !m.isOwner) return
-     if (m.isBot) return;
-     if (Object.keys(store.groupMetadata).length === 0) store.groupMetadata = await sock.groupFetchAllParticipating();
-  for (let name in pg.plugins) {
-     let plugin = {}
-       if (typeof pg.plugins[name].run === "function") {
-          plugin = pg.plugins[name]
-        }
-      if (!plugin) return 
-      if (!plugin.command && typeof plugin.run === "function") {
-        await plugin.run(m, {
-           sock,
-           Func,
-           config 
-         })
-      }
-     let Scraper = await scraper.list()     
-     let cmd = m.command.toLowerCase() === plugin.command ?
-         m.command.toLowerCase() :
-         plugin.alias.includes(m.command.toLowerCase());
-      let text = ''
-          if (cmd) {
-	      if (m.quoted) {
-	        text = m.isQuoted ? m.quoted.text : m.text
-          } else {
-	        text = m.isQuoted ? m.quoted.body : m.text
-          }
-        }
-     try {
-      if (cmd) {
-        if (plugin.settings && plugin.settings.owner && !m.isOwner) {
-           m.reply(config.messages.owner);
-           continue
-          } else if (plugin.settings && plugin.settings.group && !m.isGroup) {
-            m.reply(config.messages.group);
-           continue
-       }
-     if (plugin.loading) m.react("🕐");  
-       await plugin.run(m, {
-          sock,
-          config,
-          text,
-          plugins: Object.values(pg.plugins).filter(a => a.alias),
-          Func,
-          Scraper
-        })   
-       }    
-      } catch(e) {
-      if (e.name) {
-           m.reply(Func.jsonFormat(e));
-            } else {
-	          m.reply(e)
-           }
-        }
-      }
-       require("./lib/logger.js")(m);
-       await require("./system/case.js")(m, sock, store);
-     });
-=======
 	             var toCmd = pollUpdate.filter(v => v.voters.length !== 0)[0]?.name
                  let msg = append.smsg(loadMsg, sock, store);
                 let hasil = append.serialize(msg, sock, store);
@@ -436,7 +326,6 @@ sock.ev.on('messages.update', async(chatUpdate) => {
 	          return 
    	    	}
         });
->>>>>>> 8de5675 (v1.1.0)
      return sock
   }
 system()
