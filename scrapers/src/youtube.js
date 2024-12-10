@@ -2,9 +2,118 @@ const ytdl = require("ytdl-core");
 const { exec } = require('child_process');
 const fs = require('fs');
 const path = require('path');
+const youtubeRegex = /(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/(?:[^\/\n\s]+\/\S+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/|youtube\.com\/(?:v|e(?:mbed)?)\/|youtube\.com\/watch\?v=)([a-zA-Z0-9_-]{11})|(?:https?:\/\/)?(?:www\.)?youtube\.com\/shorts\/([a-zA-Z0-9_-]{11})/;
+const axios = require('axios');
+const ytSearch = require('yt-search');
+
+async function ytmp3(url) {
+    try {
+        const match = url.match(youtubeRegex);
+        const videoId = match ? match[1] || match[2] : null;
+        if (!videoId) {
+            throw new Error('Invalid YouTube URL');
+        }
+       const { videos } = await ytSearch(videoId);
+        if (videos.length === 0) {
+            throw new Error('Video not found');
+        }
+        const videoDetails = videos.find(a => a.videoId === videoId);
+        let reso = [128];
+        let result = {};
+
+        while (true) {
+            for (let i of reso) {
+                const response = await axios.post('https://c.blahaj.ca/', {
+                    url: url,
+                    downloadMode: "audio"
+                }, {
+                    headers: {
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json'
+                    },
+                }).catch(e => e.response);
+                 console.log(response.data);
+                const data = response.data.url;
+                if (data) {
+                    result = data
+                }
+            }
+            break;
+        }
+
+        return {
+            metadata: {
+                title: videoDetails.title,
+                seconds: videoDetails.seconds,
+                thumbnail: videoDetails.thumbnail,
+                views: videoDetails.views.toLocaleString(),
+                publish: videoDetails.ago,
+                author: videoDetails.author,                
+                url: videoDetails.url,
+                description: videoDetails.description
+            },
+            download: result
+        };
+    } catch (error) {
+        throw error;
+    }
+}
+
+async function ytmp4(url) {
+    try {
+        const match = url.match(youtubeRegex);
+        const videoId = match ? match[1] || match[2] : null;
+        if (!videoId) {
+            throw new Error('Invalid YouTube URL');
+        }
+       const { videos } = await ytSearch(videoId);
+        if (videos.length === 0) {
+            throw new Error('Video not found');
+        }
+        const videoDetails = videos.find(a => a.videoId === videoId);
+        let reso = [128];
+        let result = {};
+
+        while (true) {
+            for (let i of reso) {
+                const response = await axios.post('https://c.blahaj.ca/', {
+                    url
+                }, {
+                    headers: {
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json'
+                    },
+                }).catch(e => e.response);
+                 console.log(response.data);
+                const data = response.data.url;
+                if (data) {
+                    result = data
+                }
+            }
+            break;
+        }
+
+        return {
+            metadata: {
+                title: videoDetails.title,
+                seconds: videoDetails.seconds,
+                thumbnail: videoDetails.thumbnail,
+                views: videoDetails.views.toLocaleString(),
+                publish: videoDetails.ago,
+                author: videoDetails.author,                
+                url: videoDetails.url,
+                description: videoDetails.description
+            },
+            download: result
+        };
+    } catch (error) {
+        throw error;
+    }
+}
 
 class Youtube {
    mp3 = async (url) => {
+   try {
     const info = await ytdl.getInfo(url);
     const audioFormat = ytdl.chooseFormat(info.formats, {
         quality: 'highestaudio',
@@ -50,8 +159,12 @@ class Youtube {
         },
         download: fileData
     };
+  } catch(e) {
+    return ytmp3(url)
+ }
 };
  mp4 = async (url) => {
+    try {
     const info = await ytdl.getInfo(url);
     let videoFormat = info.formats.find(f => (f.height === 720 || f.height === 360) && f.container === 'mp4');
     const audioFormat = ytdl.chooseFormat(info.formats, {
@@ -122,7 +235,10 @@ class Youtube {
           description: videoDetails.description
         },
       download: buffer
-    };
+     };
+    } catch(e) {
+       return ytmp4(url);
+    }
   }
   playlist = async (url) => {
       let response = await axios.post(
