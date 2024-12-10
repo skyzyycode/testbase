@@ -87,7 +87,7 @@ const store = makeInMemoryStore({
         stream: 'store' 
      })
   })
- 
+  if (!fs.existsSync("./tmp")) return fs.mkdirSync("./tmp")
   console.log(chalk.blue.bold("- Hi Welcome to NekoBot !"))
   console.log(chalk.white.bold("| Terimakasih telah menggunakan Script ini !"))
   console.log(chalk.white.bold("| Github saya [Follow] : " + chalk.cyan.bold("https://github.com/AxellNetwork")))
