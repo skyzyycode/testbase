@@ -1,12 +1,3 @@
-<<<<<<< HEAD
-/*
-=======[ Auto Load Scraper ]===========
-- Cocok Nih buat yang punya scrape
-- Gak perlu timbun banyak scrape di satu file bikin boros line 👍
-*/
-
-=======
->>>>>>> 8de5675 (v1.1.0)
 const chokidar = require("chokidar");
 const path = require('node:path');
 const fs = require('node:fs');
@@ -34,9 +25,9 @@ class Scraper {
 	 load = async() => {
    		let data = await Scandir('./scrapers/src')
         for (let i of data) {
+        let name = i.split('/').pop().replace('.js', '')
          try {
           if (!i.endsWith(".js")) return;
-           let name = i.split('/').pop().replace('.js', '')
            this.#src[name] = require(i)
           } catch(e) {
            console.log(chalk.red.bold("- Gagal memuat Scraper :" .e));

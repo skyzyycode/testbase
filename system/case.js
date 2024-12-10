@@ -22,7 +22,7 @@ module.exports = async(m, sock, store) => {
 		if (/image|video|webp/.test(quoted.msg.mimetype)) {
 		 let media = await quoted.download();
 		if (quoted.msg?.seconds > 10) throw '> Video diatas durasi 10 detik gabisa';
-          	let exif;
+       	let exif;
 			if (m.text) {
 			let [packname, author] = m.text.split(/[,|\-+&]/);
 			 	exif = { packName: packname ? packname : '', packPublish: author ? author : '' };
@@ -46,10 +46,22 @@ module.exports = async(m, sock, store) => {
 						await delay(1500);
 					
 					}
-	              } else m.reply("> Reply photo atau video yang ingin di jadikan sticker")
-	        } 
-	     break		
-           default
+				} else m.reply("> Reply photo atau video yang ingin di jadikan sticker");
+	        }
+		 break
+		 case "brat": {
+		  let input = m.isQuoted ? m.quoted.body : m.text
+		    if (!input) return m.reply("> Reply/Masukan pessn")
+		    m.reply(config.messages.wait)
+		    	let media = await scrape.brat(input);
+	         	let sticker = await writeExif({
+	             mimetype: "image", data: media
+	         }, { packName: config.sticker.packname, packPublish: config.sticker.author });
+	   	
+	   	await m.reply({ sticker });
+		 }
+		break 
+       default:
       if (['>', 'eval', '=>'].some(a => m.command.toLowerCase().startsWith(a)) && m.isOwner) {
 				let evalCmd = '';
 			try {
@@ -84,5 +96,4 @@ let file = require.resolve(__filename);
 fs.watchFile(file, () => {
    fs.unwatchFile(file);
   delete require.cache[file];
-  require(file)
 });
