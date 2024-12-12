@@ -43,7 +43,7 @@ ${latest.map((a) => Object.entries(a).map(([b, c]) => `> *- ${b.capitalize()} :*
             let cap = "*– 乂 Anime - Episode*\n"
                 cap += Object.entries(data.metadata).map(([a, b]) => `> *- ${a} :* ${typeof b === "object" ? b.join(", ") : b}`).join("\n")
                if (quality.length > 1) {
-                    cap += "\n\n*– 乂 Download - Episode*"
+                    cap += "\n\n*– 乂 Download - Episode*\n"
                   for (let i of quality) {
                      cap +=  `> *- Download ${i}*\n`
                      cap += data.download[i].map((a) => `> *- Source :* ${a.source}\n> *- Url :* ${a.url}`).join("\n")
