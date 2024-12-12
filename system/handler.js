@@ -47,14 +47,13 @@ module.exports = async(message, sock, store) => {
                        });
                 }
                 let Scraper = await scraper.list();
-              	let isCmd = m.prefix && m.body.startsWith(m.prefix) && m.command;
-               let cmd = (isCmd && (m.command.toLowerCase() === plugin.command || plugin.alias.includes(m.command.toLowerCase())));
+               let cmd = m.command.toLowerCase() === plugin.command || plugin.alias.includes(m.command.toLowerCase());
                 let text = '';
               if (cmd) {
                     text = m.text
                 }
                 try {
-                  if (isCmd) {
+                  if (cmd) {
                         if (plugin.settings?.owner && !m.isOwner) {
                             m.reply(config.messages.owner);
                             continue;
