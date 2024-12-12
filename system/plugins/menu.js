@@ -16,6 +16,9 @@ module.exports = {
     let matches = data.match(casePattern).map(match => match.replace(/case\s+"([^"]+)"/, '$1'));
      let menu = {};
     plugins.forEach(item => {
+      if (!item.category) {
+       item.category = []
+     }
       item.category.forEach(cat => {
          if (!menu[cat]) {
              menu[cat] = { command: [] };
