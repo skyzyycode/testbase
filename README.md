@@ -1,4 +1,4 @@
-**😼 NekoBot | 1.0.0** | ***create by AxellNetwork***
+**😼 NekoBot | 1.2.0** | ***create by AxellNetwork***
 
 ```> Simple WhatsApp bot Using Library Baileys```
 
