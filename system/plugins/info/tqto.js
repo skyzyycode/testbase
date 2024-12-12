@@ -1,7 +1,7 @@
 module.exports = {
     commanad: "tqto",
     alias: ["credit"],
-    category: ["info"]
+    category: ["info"],
     description: "List Contrubutor bot ini",
     async run(m) {
         let cap = `*>_ TERIMAKASIH KEPADA :*
