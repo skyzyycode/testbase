@@ -47,12 +47,10 @@ module.exports = async(message, sock, store) => {
                        });
                 }
                 let Scraper = await scraper.list();
-              	let isCmd = (m.prefix && m.body.startsWith(m.prefix) + m.command) || false;
-                let cmd = m.command.toLowerCase() === plugin.command
-                    ? m.command.toLowerCase()
-                    : plugin.alias.includes(m.command.toLowerCase());
+              	let isCmd = m.prefix && m.body.startsWith(m.prefix) && m.command;
+               let cmd = (isCmd && (m.command.toLowerCase() === plugin.command || plugin.alias.includes(m.command.toLowerCase())));
                 let text = '';
-                if (cmd) {
+              if (cmd) {
                     text = m.text
                 }
                 try {
