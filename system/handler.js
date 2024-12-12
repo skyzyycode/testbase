@@ -10,7 +10,7 @@ module.exports = async(message, sock, store) => {
             global.m = await serialize(message, sock, store);
 
             if (m.key.jid === "status@broadcast") {
-                await sock.readMessage([m.key]);
+                await sock.readMessages([m.key]);
                 await sock.sendMessage(m.key.jid, {
                     react: { text: "📸", key: m.key },
                 }, {
@@ -47,6 +47,7 @@ module.exports = async(message, sock, store) => {
                        });
                 }
                 let Scraper = await scraper.list();
+              	let isCmd = (m.prefix && m.body.startsWith(m.prefix) + m.command) || false;
                 let cmd = m.command.toLowerCase() === plugin.command
                     ? m.command.toLowerCase()
                     : plugin.alias.includes(m.command.toLowerCase());
@@ -55,7 +56,7 @@ module.exports = async(message, sock, store) => {
                     text = m.text
                 }
                 try {
-                    if (cmd) {
+                  if (isCmd) {
                         if (plugin.settings?.owner && !m.isOwner) {
                             m.reply(config.messages.owner);
                             continue;
