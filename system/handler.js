@@ -1,11 +1,11 @@
 const config = require("../settings.js");
 const Func = require("../lib/function.js");
 const serialize = require("../lib/serialize.js");
+const Uploader = require("../lib/uploader.js");
 
 module.exports = async(message, sock, store) => {
-        try {
-            message.message = Object.keys(message.message)[0] === 'ephemeralMessage'
-                ? message.message.ephemeralMessage.message
+  try {
+      message.message = Object.keys(message.message)[0] === 'ephemeralMessage'  ? message.message.ephemeralMessage.message
                 : message.message;
             global.m = await serialize(message, sock, store);
 
@@ -26,6 +26,9 @@ module.exports = async(message, sock, store) => {
             if (Object.keys(store.groupMetadata).length === 0) {
                 store.groupMetadata = await sock.groupFetchAllParticipating();
             }
+            const admin = m.isGroup ? m.metadata.participants.filter(a => a.admin && a.admin !== null) : false
+            const isAdmin = m.isGroup ? admin.find(a => a.id === m.sender)  || false : false
+            const botAdmin = m.isGroup ? admin.find(a => a.id === sock.decodeJid(sock.user.id)) : false
             for (let name in pg.plugins) {
                 let plugin = {};
                 if (typeof pg.plugins[name].run === "function") {
@@ -36,7 +39,11 @@ module.exports = async(message, sock, store) => {
                 await plugin.run(m, { 
                           sock, 
                           Func,
-                          config
+                          config,
+                          Uploader,
+                          isAdmin,
+                          botAdmin,
+                          store
                        });
                 }
                 let Scraper = await scraper.list();
@@ -45,7 +52,7 @@ module.exports = async(message, sock, store) => {
                     : plugin.alias.includes(m.command.toLowerCase());
                 let text = '';
                 if (cmd) {
-                    text = m.isQuoted ? (m.quoted ? m.quoted.text : m.text) : m.text;
+                    text = m.text
                 }
                 try {
                     if (cmd) {
@@ -55,8 +62,13 @@ module.exports = async(message, sock, store) => {
                         } else if (plugin.settings?.group && !m.isGroup) {
                             m.reply(config.messages.group);
                             continue;
+                        } else if (plugin.settings?.admin && !isAdmin) {
+                            m.reply(config.messages.admin);
+                            continue;
+                        } else if (plugin.settings?.botAdmin && !botAdmin) {
+                            m.reply(config.messages.botAdmin);
+                            continue;
                         }
-                        if (plugin.loading) m.react("🕐");
                         await plugin.run(m, {
                             sock,
                             config,
@@ -64,8 +76,13 @@ module.exports = async(message, sock, store) => {
                             plugins: Object.values(pg.plugins).filter(a => a.alias),
                             Func,
                             Scraper,
+                            Uploader,
+                            isAdmin,
+                            botAdmin,
+                            store
                         });
-                    }
+                   if (plugin.loading) m.react("🕐");
+                  }
                 } catch (e) {
                     if (e.name) {
                         m.reply(Func.jsonFormat(e));
@@ -74,9 +91,9 @@ module.exports = async(message, sock, store) => {
                     }
                 }
             }
-            require("../lib/logger.js")(m);
-            await require("./case.js")(m, sock, store);
-        } catch (error) {
-            console.error(error);
-        }
+       require("../lib/logger.js")(m);
+       await require("./case.js")(m, sock, store);
+    } catch(error) {
+        console.error(error);
+    }
 }

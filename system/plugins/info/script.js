@@ -16,11 +16,7 @@ module.exports = {
            cap += `> *- Terakhir update :* ${Func.ago(data.updated_at)}\n`
            cap += `> *- Terakhir publish :* ${Func.ago(data.pushed_at)}\n`
           cap += `> *- Link :* ${data.html_url}\n`
-          cap += "\n\n*– ✅ Support Multi type ( Case & Plugins )*\n"
-          cap += "*– ✅ Support Pairing code*\n"
-          cap += "*– ✅ Script file under 100kb*\n"
-          cap += "*– ✅  Auto Reload File scrape*"
-          cap += "\n\n*- Note :* ini hanya base dari script bot kami, oleh karena kami membebaskan pengguna agar dapat recode ulang script ini secara gratis ( tanpa menghilangkan sumber dari script ini )\n\n*– Forum Update :*\nhttps://whatsapp.com/channel/0029VauJgduEwEjwwVwLnw37"
+          cap += "\nScript dapat kembang kan sendiri dan jika kamu dapat menjual nya secara komersial dengan catatan jangan menghilangkan credits kami *( Kalo bisa tambahkan credits namamu di bawah nama kami )*\n\n*– 乂 Thank for Build Script & Helper*\n> *-* Bang_syaii [ https://github.com/LT-SYAII ]\n> *-* AxellNetwork [ https://github.com/AxellNetwork ]\n\n*– Forum Update :* https://whatsapp.com/channel/0029VauJgduEwEjwwVwLnw37"
 
       m.reply(cap);
     }

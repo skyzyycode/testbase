@@ -25,11 +25,6 @@ const Database = require("./lib/database.js");
 const append = require("./lib/append");
 const serialize = require("./lib/serialize.js");
 const config = require("./settings.js");
-const Func = require("./lib/function.js");
- 
-const data = fs.readFileSync(process.cwd()+'/system/case.js', 'utf8');
-const casePattern = /case\s+"([^"]+)"/g;
-const matches = data.match(casePattern).map(match => match.replace(/case\s+"([^"]+)"/, '$1'));
 
 const appenTextMessage = async (m, sock, text, chatUpdate) => {
     let messages = await generateWAMessage(
@@ -76,7 +71,7 @@ require(process.cwd()+"/scrapers"))(process.cwd()+"/scrapers/src");
     await scraper.watch();
      
 setInterval(async () => {
-    await db.save(); 
+    await db.save();
     await pg.load();
     await scraper.load();
 }, 2000);
@@ -87,7 +82,7 @@ const store = makeInMemoryStore({
         stream: 'store' 
      })
   })
-  if (!fs.existsSync("./tmp")) return fs.mkdirSync("./tmp")
+ 
   console.log(chalk.blue.bold("- Hi Welcome to NekoBot !"))
   console.log(chalk.white.bold("| Terimakasih telah menggunakan Script ini !"))
   console.log(chalk.white.bold("| Github saya [Follow] : " + chalk.cyan.bold("https://github.com/AxellNetwork")))
@@ -218,15 +213,14 @@ sock.ev.on("messages.upsert", async (cht) => {
     if (cht.messages.length === 0) return;
     const chatUpdate = cht.messages[0];
     if (!chatUpdate.message) return;
-    messageQueue.add(chatUpdate);
-    console.log(messageQueue);
-    if (!messageQueue.processing) {
-        messageQueue.processQueue(async (message) => {
-            await require("./system/handler.js")(message, sock, store);
+    const userId = chatUpdate.key.id;
+    messageQueue.add(userId, chatUpdate);
+    if (!messageQueue.processing[userId]) {
+   messageQueue.processQueue(userId, async (message) => {
+    await require("./system/handler.js")(message, sock, store);
         });
     }
 });
-
 
 sock.ev.on('messages.update', async(chatUpdate) => {
         for (const { key, update } of chatUpdate) {
@@ -242,7 +236,6 @@ sock.ev.on('messages.update', async(chatUpdate) => {
                  let msg = append.smsg(loadMsg, sock, store);
                 let hasil = append.serialize(msg, sock, store);
 	          await appenTextMessage(hasil, sock, toCmd, chatUpdate);
-	          await delay(1000);
 	          return sock.sendMessage(hasil.chat, { delete: key });
 	            	}
 	         	} else return false

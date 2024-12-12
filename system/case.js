@@ -12,11 +12,11 @@ const Func = require("../lib/function");
 const { writeExif } = require('../lib/sticker');
 
 module.exports = async(m, sock, store) => {
-	let isCommand = (m.prefix && m.body.startsWith(m.prefix)) || false;
+	let isCommand = (m.prefix && m.body.startsWith(m.prefix) + m.command) || false;
 	const quoted = m.isQuoted ? m.quoted : m
 	const scrape = await scraper.list()
 	
-   switch(isCommand ? m.command.toLowerCase() : false) {
+   switch(m.command) {
 	case "sticker":
     case "s":  {
 		if (/image|video|webp/.test(quoted.msg.mimetype)) {

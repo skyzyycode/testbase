@@ -6,9 +6,10 @@ module.exports = {
           limit: true,
       },
      description: "Tingkatkan kualitas Photo mu !",
+    loading: true,
     async run(m, { sock, Scraper, Func }) {
         let q = m.quoted ? m.quoted : m
-         if (!q.isMedia) throw `> Reply/Kirim photo yang mau di jernihkan`
+         if (!/image/.test(q.msg.mimetype) || !q.isMedia) throw `> Reply/Kirim photo yang mau di jernihkan`
        let buffer = await q.download();
        let data = await Scraper.remini(buffer);
       let size = Func.formatSize(data.length);
