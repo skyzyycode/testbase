@@ -7,7 +7,7 @@ module.exports = async(message, sock, store) => {
   try {
       message.message = Object.keys(message.message)[0] === 'ephemeralMessage'  ? message.message.ephemeralMessage.message
                 : message.message;
-            global.m = await serialize(message, sock, store);
+           let m = await serialize(message, sock, store);
 
             if (m.key.jid === "status@broadcast") {
                 await sock.readMessages([m.key]);

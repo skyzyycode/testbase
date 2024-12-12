@@ -226,7 +226,7 @@ sock.ev.on('messages.update', async(chatUpdate) => {
         for (const { key, update } of chatUpdate) {
 			if (update.pollUpdates && key.fromMe) {
 				const pollCreation = await getMessage(key)
-				const loadMsg = await store.loadMessage(m.key.remoteJid, m.key.id)
+				const loadMsg = await store.loadMessage(key.remoteJid, key.id)
 				if (pollCreation) {
 				    const pollUpdate = await getAggregateVotesInPollMessage({
 							message: pollCreation,
