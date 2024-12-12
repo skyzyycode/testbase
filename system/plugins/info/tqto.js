@@ -1,5 +1,5 @@
 module.exports = {
-    commanad: "tqto",
+    command: "tqto",
     alias: ["credit"],
     category: ["info"],
     description: "List Contrubutor bot ini",
