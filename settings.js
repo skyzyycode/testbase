@@ -9,10 +9,12 @@ const config = {
       author: "nekoBot"
     },
    messages: {
-      wait: "*( Loading )* Tunggu Sebentar...",
-      owner: "*( Denied )* Kamu bukan owner ku !",
-      premium: "*( Denied )* Fitur ini khusus user premium",
-      group: "*( Denied )* Fitur ini khusus group",
+      wait: "> Data sedang memprosess...",
+      owner: "> Khusus Owner bot ini mah",
+      premium: "> Upgrade ke premium kalo mau akses, murah aja",
+      group: "> Fitur khusus group chat",
+      botAdmin: "> Lu siapa bukan Admin group",
+      grootbotbup: "> Jadiin NekoBot admin dulu baru bisa akses",
    },
    database: "neko-db",
    tz: "Asia/Jakarta"

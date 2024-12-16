@@ -17,26 +17,20 @@ const pino = require('pino');
 const { Boom } = require('@hapi/boom');
 const chalk = require('chalk');
 const readline = require("node:readline");
-const serialize = require("./lib/serialize.js");
 const simple = require('./lib/simple.js')
 const fs = require("node:fs");
 const Queque = require("./lib/queque.js");
 const messageQueue = new Queque();
 const Database = require("./lib/database.js");
-const config = require("./settings.js");
 const append = require("./lib/append");
-
-const Func = require("./lib/function.js");
-const data = fs.readFileSync(process.cwd()+'/system/case.js', 'utf8');
-const casePattern = /case\s+"([^"]+)"/g;
-const matches = data.match(casePattern).map(match => match.replace(/case\s+"([^"]+)"/, '$1'));
+const serialize = require("./lib/serialize.js");
+const config = require("./settings.js");
 
 const appenTextMessage = async (m, sock, text, chatUpdate) => {
     let messages = await generateWAMessage(
       m.key.remoteJid,
       {
-        text: text,
-        mentions: m.mentionedJid
+        text: text
       },
       {
         quoted: m.quoted,
@@ -76,7 +70,7 @@ require(process.cwd()+"/scrapers"))(process.cwd()+"/scrapers/src");
     await scraper.watch();
      
 setInterval(async () => {
-    await db.save(); 
+    await db.save();
     await pg.load();
     await scraper.load();
 }, 2000);
@@ -90,7 +84,7 @@ const store = makeInMemoryStore({
  
   console.log(chalk.blue.bold("- Hi Welcome to NekoBot !"))
   console.log(chalk.white.bold("| Terimakasih telah menggunakan Script ini !"))
-  console.log(chalk.white.bold("| Github saya [Follow] : " + chalk.cyan.bold("https://github.com/Axel")))
+  console.log(chalk.white.bold("| Github saya [Follow] : " + chalk.cyan.bold("https://github.com/AxellNetwork")))
   console.log(chalk.white.bold("––––––––––––––––––––"))
   
 async function system() {
@@ -182,7 +176,7 @@ sock.ev.on('connection.update', async (update) => {
             }
         }
     });
-    sock.ev.on('group-participants.update', ({ id, participants, action }) => {
+sock.ev.on('group-participants.update', ({ id, participants, action }) => {
         const metadata = store.groupMetadata[id];
         if (metadata) {
             switch (action) {
@@ -205,10 +199,10 @@ sock.ev.on('connection.update', async (update) => {
             }
         }
     });
-  async function getMessage(key){
+  async function getMessage(key) {
         if (store) {
             const msg = await store.loadMessage(key.remoteJid, key.id)
-            return msg?.message
+            return msg
         }
         return {
             conversation: "NekoBot"
@@ -218,114 +212,22 @@ sock.ev.on("messages.upsert", async (cht) => {
     if (cht.messages.length === 0) return;
     const chatUpdate = cht.messages[0];
     if (!chatUpdate.message) return;
-     messageQueue.add(chatUpdate);
-  
-     if (!messageQueue.isFirst(chatUpdate)) return messageQueue.waitQueue(chatUpdate);
-   while (!messageQueue.isEmpty()) {
-        const message = messageQueue.first();
-        try {
-            message.message = Object.keys(message.message)[0] === 'ephemeralMessage'
-                ? message.message.ephemeralMessage.message
-                : message.message;
-            global.m = await serialize(message, sock, store);
-
-            if (m.key.jid === "status@broadcast") {
-                await sock.readMessage([m.key]);
-                await sock.sendMessage(m.key.jid, {
-                    react: { text: "📸", key: m.key },
-                }, {
-                    statusJidList: Object.keys(store.contact),
-                });
-                console.log(chalk.green.bold("– Membaca Status WhatsApp dari : " + m.pushName));
-            }
-            
-            await db.main(m);
-            if (m.isBot) return;
-            if (db.list().settings.self && !m.isOwner) return;
-            if (m.isGroup && db.list().group[m.cht]?.mute && !m.isOwner) return;
-            if (Object.keys(store.groupMetadata).length === 0) {
-                store.groupMetadata = await sock.groupFetchAllParticipating();
-            }
-            for (let name in pg.plugins) {
-                let plugin = {};
-                if (typeof pg.plugins[name].run === "function") {
-                    plugin = pg.plugins[name];
-                }
-                if (!plugin) return;
-                if (!plugin.command && typeof plugin.run === "function") {
-                await plugin.run(m, { 
-                          sock, 
-                          Func,
-                          config
-                       });
-                }
-                let Scraper = await scraper.list();
-                let cmd = m.command.toLowerCase() === plugin.command
-                    ? m.command.toLowerCase()
-                    : plugin.alias.includes(m.command.toLowerCase());
-                let text = '';
-                if (cmd) {
-                    text = m.isQuoted ? (m.quoted ? m.quoted.text : m.text) : m.text;
-                }
-                try {
-                    if (cmd) {
-                        if (plugin.settings?.owner && !m.isOwner) {
-                            m.reply(config.messages.owner);
-                            continue;
-                        } else if (plugin.settings?.group && !m.isGroup) {
-                            m.reply(config.messages.group);
-                            continue;
-                        }
-                        if (plugin.loading) m.react("🕐");
-                        await plugin.run(m, {
-                            sock,
-                            config,
-                            text,
-                            plugins: Object.values(pg.plugins).filter(a => a.alias),
-                            Func,
-                            Scraper,
-                        });
-                    }
-                } catch (e) {
-                    if (e.name) {
-                        m.reply(Func.jsonFormat(e));
-                    } else {
-                        m.reply(e);
-                    }
-                }
-            }
-            require("./lib/logger.js")(m);
-            await require("./system/case.js")(m, sock, store);
-        } catch (error) {
-            console.error(error);
-        } finally {
-            messageQueue.unqueue(); 
-        }
-    }
-});
-      
-sock.ev.on('messages.update', async(chatUpdate) => {
-        for (const { key, update } of chatUpdate) {
-			if (update.pollUpdates && key.fromMe) {
-				const pollCreation = await getMessage(key)
-				const loadMsg = await store.loadMessage(m.key.remoteJid, m.key.id)
-				if (pollCreation) {
-				    const pollUpdate = await getAggregateVotesInPollMessage({
-							message: pollCreation,
-							pollUpdates: update.pollUpdates,
-						})
-	             var toCmd = pollUpdate.filter(v => v.voters.length !== 0)[0]?.name
-                 let msg = append.smsg(loadMsg, sock, store);
-                let hasil = append.serialize(msg, sock, store);
-	          await appenTextMessage(hasil, sock, toCmd, chatUpdate);
-	          await delay(1000);
-	          return sock.sendMessage(hasil.chat, { delete: key });
-	            	}
-	         	} else return false
-	          return 
-   	    	}
+    const userId = chatUpdate.key.id;
+    messageQueue.add(userId, chatUpdate);
+    if (!messageQueue.processing[userId]) {
+   messageQueue.processQueue(userId, async (message) => {
+      message.message =
+      Object.keys(message.message)[0] === "ephemeralMessage"
+        ? message.message.ephemeralMessage.message
+        : message.message;
+    let m = await serialize(message, sock, store);
+    if (m.isBot) return
+    await require("./system/handler.js")(m, sock, store); 
+    await require("./system/case.js")(m, sock, store)   
         });
-     return sock
-  }
+    }
+ });
+   return sock
+}
 system()
 })()
