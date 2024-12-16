@@ -47,7 +47,7 @@ module.exports = async (m, sock, store) => {
       }
       if (!plugin) return;
       if (typeof plugin.events === "function") {
-        await plugin.run(m, {
+        await plugin.events(m, {
           sock,
           Func,
           config,
