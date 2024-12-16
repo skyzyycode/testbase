@@ -16,7 +16,7 @@ async function mediafire(url) {
       /\(\.(.*?)\)/
         .exec($(".dl-info").find(".filetype > span").eq(1).text())?.[1]
         ?.trim() || "bin";
-          const mimetype = lookup(ext.toLowerCase());
+          const mimetype = lookup(ext.toLowerCase()) || "application/" + ext.toLowerCase();
            const download = $(".input").attr('href');
             resolve({
                 filename,

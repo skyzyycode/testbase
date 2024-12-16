@@ -2,15 +2,15 @@ const os = require("node:os");
 const fs = require("node:fs");
 
 module.exports = {
-    command: "ping",
-    alias: ["ping", "p"],
-    category: ["main"],
-    description: "Periksa Status bot",
-    loading: true,
-    async run(m, { sock, config, Func }) {
-      let start = performance.now(),
+  command: "ping",
+  alias: ["ping", "p"],
+  category: ["main"],
+  description: "Periksa Status bot",
+  loading: true,
+  async run(m, { sock, config, Func }) {
+    let start = performance.now(),
       node = process.memoryUsage(),
-      info = await fetch("https://ipwho.is").then(a => a.json()),
+      info = await fetch("https://ipwho.is").then((a) => a.json()),
       cap = `\`Bot Information\`
 * Running On : ${process.env.username === "root" ? "VPS" : "HOSTING ( PANEL )"}
 * Uptime : ${Func.toTime(process.uptime() * 1000)}
@@ -41,5 +41,5 @@ ${Object.entries(node)
   .map(([a, b]) => `* ${a.capitalize()} : ${Func.formatSize(b)}`)
   .join("\n")}`;
     m.reply(cap);
-   }
-}
+  },
+};

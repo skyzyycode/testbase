@@ -1,13 +1,48 @@
-const ytdl = require("ytdl-core");
-const { exec } = require('child_process');
-const fs = require('fs');
-const path = require('path');
 const youtubeRegex = /(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/(?:[^\/\n\s]+\/\S+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/|youtube\.com\/(?:v|e(?:mbed)?)\/|youtube\.com\/watch\?v=)([a-zA-Z0-9_-]{11})|(?:https?:\/\/)?(?:www\.)?youtube\.com\/shorts\/([a-zA-Z0-9_-]{11})/;
 const axios = require('axios');
 const ytSearch = require('yt-search');
+const { exec } = require('child_process');
+const { promisify } = require('util');
+const fs = require('fs');
+const path = require('path');
 
+const execPromise = promisify(exec);
 
+async function converter(inputBuffer, inputFormat, outputFormat) {
+    // Validate input types
+    if (!Buffer.isBuffer(inputBuffer)) {
+        throw new Error('Input must be a Buffer');
+    }
+    if (typeof inputFormat !== 'string' || typeof outputFormat !== 'string') {
+        throw new Error('Input and output formats must be strings');
+    }
 
+    const inputFilePath = path.resolve(`./tmp/temp_input.${inputFormat}`);
+    const outputFilePath = path.resolve(`./tmp/temp_output.${outputFormat}`);
+
+    try {
+        await fs.promises.writeFile(inputFilePath, inputBuffer);
+        console.log('Input file written successfully.');
+
+        console.log('Starting conversion...');
+        await execPromise(`ffmpeg -i ${inputFilePath} ${outputFilePath}`);
+        console.log('Conversion completed successfully.');
+
+        const outputBuffer = await fs.promises.readFile(outputFilePath);
+        return outputBuffer;
+    } catch (error) {
+        console.error('Error while converting file:', error);
+        throw error; // Re-throw error for higher-level handling
+    } finally {
+        // Cleanup temporary files
+        try {
+            if (fs.existsSync(inputFilePath)) await fs.promises.unlink(inputFilePath);
+            if (fs.existsSync(outputFilePath)) await fs.promises.unlink(outputFilePath);
+        } catch (cleanupError) {
+            console.error('Error while cleaning up temp files:', cleanupError);
+        }
+    }
+}
 
 class Youtube {
    mp3 = async function ytmp3(url) {
@@ -26,7 +61,7 @@ class Youtube {
 
         while (true) {
             for (let i of reso) {
-                const response = await axios.post('https://c.blahaj.ca/', {
+                const response = await axios.post('https://cobalt-api.kwiatekmiki.com', {
                     url: url,
                     downloadMode: "audio"
                 }, {
@@ -38,12 +73,12 @@ class Youtube {
                  console.log(response.data);
                 const data = response.data.url;
                 if (data) {
-                    result = data
+                   let buffer = await fetch(data).then(async(a) => Buffer.from(await a.arrayBuffer()))
+                    result = buffer
                 }
             }
             break;
         }
-
         return {
             metadata: {
                 title: videoDetails.title,
@@ -55,7 +90,7 @@ class Youtube {
                 url: videoDetails.url,
                 description: videoDetails.description
             },
-            download: await fetch(result).then(async(a) => Buffer.from(await a.arrayBuffer()))
+            download: result
       };
 }
 
@@ -75,7 +110,7 @@ class Youtube {
 
         while (true) {
             for (let i of reso) {
-                const response = await axios.post('https://c.blahaj.ca/', {
+                const response = await axios.post('https://cobalt-api.kwiatekmiki.com', {
                     url
                 }, {
                     headers: {
@@ -86,7 +121,8 @@ class Youtube {
                  console.log(response.data);
                 const data = response.data.url;
                 if (data) {
-                    result = data
+                    let buffer = await fetch(data).then(async(a) => Buffer.from(await a.arrayBuffer()))
+                    result = await converter(buffer, "webm", "mp4");
                 }
             }
             break;
@@ -103,7 +139,7 @@ class Youtube {
                 url: videoDetails.url,
                 description: videoDetails.description
             },
-            download: await fetch(result).then(async(a) => Buffer.from(await a.arrayBuffer()))
+            download: result
         };
 }
   playlist = async (url) => {

@@ -11,25 +11,26 @@ module.exports = {
     description: "Menampilkan menu bot",
     loading: true,
     async run(m, { sock, plugins, config, Func }) {
-    let data = fs.readFileSync(process.cwd()+'/system/case.js', 'utf8');
+    let data = fs.readFileSync(process.cwd() + "/system/case.js", "utf8");
     let casePattern = /case\s+"([^"]+)"/g;
-    let matches = data.match(casePattern).map(match => match.replace(/case\s+"([^"]+)"/, '$1'));
-     let menu = {};
-    plugins.forEach(item => {
-      if (!item.category) {
-       item.category = []
-     }
-      item.category.forEach(cat => {
-         if (!menu[cat]) {
-             menu[cat] = { command: [] };
-         }  
-        menu[cat].command.push({
-                name: item.command,
-                alias: item.alias,
-                description: item.description
-             });
+    let matches = data.match(casePattern);
+    if (!matches) return m.reply("Tidak ada case yang ditemukan.");
+    matches = matches.map((match) => match.replace(/case\s+"([^"]+)"/, "$1"));   
+    let menu = {};
+    plugins.forEach((item) => {
+      if (item.category && item.command && item.alias && item.description) {
+        item.category.forEach((cat) => {
+          if (!menu[cat]) {
+            menu[cat] = { command: [] };
+          }
+          menu[cat].command.push({
+            name: item.command,
+            alias: item.alias,
+            description: item.description,
           });
-       });
+        });
+      }
+    });
     let cmd = 0;
     let alias = 0;
     let pp = await sock.profilePictureUrl(m.sender, 'image').catch(e => 'https://files.catbox.moe/8getyg.jpg')

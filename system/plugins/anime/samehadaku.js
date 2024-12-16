@@ -1,17 +1,17 @@
- // Singkat, padat, mantap 
- // Makasih syaii sudah mau bantuin scrapein ini :v
- 
+// Singkat, padat, mantap
+// Makasih syaii sudah mau bantuin scrapein ini :v
+
 module.exports = {
-      command: "samehadaku",
-      alias: [],
-      category: ['anime'],
-      settigs : {
-         limit: true
-      },
-     description: 'Cek Anime terbaru di samehadaku',
-     async run(m, { sock, Scraper, text, Func }) {
-       let latest = await Scraper.samehadaku.latest();
-       let cap = `*– 乂 Cara penggunaan*
+  command: "samehadaku",
+  alias: [],
+  category: ["anime"],
+  settigs: {
+    limit: true,
+  },
+  description: "Cek Anime terbaru di samehadaku",
+  async run(m, { sock, Scraper, text, Func }) {
+    let latest = await Scraper.samehadaku.latest();
+    let cap = `*– 乂 Cara penggunaan*
 > Masukan query untuk mencari anime
 > Masukan link untuk mendapatkan data anime
 
@@ -22,44 +22,67 @@ module.exports = {
 
 *– 乂 Berikut ${latest.length} anime yang rilis hari ini*
 
-${latest.map((a) => Object.entries(a).map(([b, c]) => `> *- ${b.capitalize()} :* ${c}`).join("\n")).join("\n\n")}`
-       if (!text) return m.reply(cap)
-      if (Func.isUrl(text) && /samehadaku.email/.test(text)) {
-         if (/anime\//.test(text)) {
-            let data = await Scraper.samehadaku.detail(text);
-            let cap = `*– Anime - Detail*\n`
-                cap += Object.entries(data.metadata).map(([a, b]) => `> *- ${a} :* ${b}`).join("\n")
-                cap += "\n\n*– 乂 List - Episode*\n"
-                cap += data.episode.map((a, i) => `*${i + 1}.* ${a.title}\n> ${a.url}`).join("\n\n")
-            m.reply({
-                image: {
-                  url: data.metadata.thumbnail
-                },
-                caption: cap
-             });
-         } else {
-            let data = await Scraper.samehadaku.episode(text);
-            let quality = Object.keys(data.download)
-            let cap = "*– 乂 Anime - Episode*\n"
-                cap += Object.entries(data.metadata).map(([a, b]) => `> *- ${a} :* ${typeof b === "object" ? b.join(", ") : b}`).join("\n")
-               if (quality.length > 1) {
-                    cap += "\n\n*– 乂 Download - Episode*\n"
-                  for (let i of quality) {
-                     cap +=  `> *- Download ${i}*\n`
-                     cap += data.download[i].map((a) => `> *- Source :* ${a.source}\n> *- Url :* ${a.url}`).join("\n")
-                     cap += "\n\n"
-                  } 
-            } else {
-               cap += "\n\ntidak ada link download pada episode ini"
-              }
-           m.reply(cap)
-         }
-       } else {
-         let data = await Scraper.samehadaku.search(text)
-         if (data.length === 0) throw "> Anime tidak ditemukan"
-         let cap = "*– 乂 Anime - Search*\n"
-             cap += data.map((a) => Object.entries(a).map(([b, c]) => `> *- ${b.capitalize()} :* ${c}`).join("\n")).join("\n\n")
-            m.reply(cap)
-       }
-     }
-}
+${latest
+  .map((a) =>
+    Object.entries(a)
+      .map(([b, c]) => `> *- ${b.capitalize()} :* ${c}`)
+      .join("\n"),
+  )
+  .join("\n\n")}`;
+    if (!text) return m.reply(cap);
+    if (Func.isUrl(text) && /samehadaku.email/.test(text)) {
+      if (/anime\//.test(text)) {
+        let data = await Scraper.samehadaku.detail(text);
+        let cap = `*– Anime - Detail*\n`;
+        cap += Object.entries(data.metadata)
+          .map(([a, b]) => `> *- ${a} :* ${b}`)
+          .join("\n");
+        cap += "\n\n*– 乂 List - Episode*\n";
+        cap += data.episode
+          .map((a, i) => `*${i + 1}.* ${a.title}\n> ${a.url}`)
+          .join("\n\n");
+        m.reply({
+          image: {
+            url: data.metadata.thumbnail,
+          },
+          caption: cap,
+        });
+      } else {
+        let data = await Scraper.samehadaku.episode(text);
+        let quality = Object.keys(data.download);
+        let cap = "*– 乂 Anime - Episode*\n";
+        cap += Object.entries(data.metadata)
+          .map(
+            ([a, b]) =>
+              `> *- ${a} :* ${typeof b === "object" ? b.join(", ") : b}`,
+          )
+          .join("\n");
+        if (quality.length > 1) {
+          cap += "\n\n*– 乂 Download - Episode*";
+          for (let i of quality) {
+            cap += `> *- Download ${i}*\n`;
+            cap += data.download[i]
+              .map((a) => `> *- Source :* ${a.source}\n> *- Url :* ${a.url}`)
+              .join("\n");
+            cap += "\n\n";
+          }
+        } else {
+          cap += "\n\ntidak ada link download pada episode ini";
+        }
+        m.reply(cap);
+      }
+    } else {
+      let data = await Scraper.samehadaku.search(text);
+      if (data.length === 0) throw "> Anime tidak ditemukan";
+      let cap = "*– 乂 Anime - Search*\n";
+      cap += data
+        .map((a) =>
+          Object.entries(a)
+            .map(([b, c]) => `> *- ${b.capitalize()} :* ${c}`)
+            .join("\n"),
+        )
+        .join("\n\n");
+      m.reply(cap);
+    }
+  },
+};

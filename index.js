@@ -30,8 +30,7 @@ const appenTextMessage = async (m, sock, text, chatUpdate) => {
     let messages = await generateWAMessage(
       m.key.remoteJid,
       {
-        text: text,
-        mentions: m.mentionedJid
+        text: text
       },
       {
         quoted: m.quoted,
@@ -203,7 +202,7 @@ sock.ev.on('group-participants.update', ({ id, participants, action }) => {
   async function getMessage(key) {
         if (store) {
             const msg = await store.loadMessage(key.remoteJid, key.id)
-            return msg?.message
+            return msg
         }
         return {
             conversation: "NekoBot"
@@ -217,32 +216,18 @@ sock.ev.on("messages.upsert", async (cht) => {
     messageQueue.add(userId, chatUpdate);
     if (!messageQueue.processing[userId]) {
    messageQueue.processQueue(userId, async (message) => {
-    await require("./system/handler.js")(message, sock, store);
+      message.message =
+      Object.keys(message.message)[0] === "ephemeralMessage"
+        ? message.message.ephemeralMessage.message
+        : message.message;
+    let m = await serialize(message, sock, store);
+    if (m.isBot) return
+    await require("./system/handler.js")(m, sock, store); 
+    await require("./system/case.js")(m, sock, store)   
         });
     }
-});
-
-sock.ev.on('messages.update', async(chatUpdate) => {
-        for (const { key, update } of chatUpdate) {
-			if (update.pollUpdates && key.fromMe) {
-				const pollCreation = await getMessage(key)
-				const loadMsg = await store.loadMessage(key.remoteJid, key.id)
-				if (pollCreation) {
-				    const pollUpdate = await getAggregateVotesInPollMessage({
-							message: pollCreation,
-							pollUpdates: update.pollUpdates,
-						})
-	             var toCmd = pollUpdate.filter(v => v.voters.length !== 0)[0]?.name
-                 let msg = append.smsg(loadMsg, sock, store);
-                let hasil = append.serialize(msg, sock, store);
-	          await appenTextMessage(hasil, sock, toCmd, chatUpdate);
-	          return sock.sendMessage(hasil.chat, { delete: key });
-	            	}
-	         	} else return false
-	          return 
-   	    	}
-        });
-     return sock
-  }
+ });
+   return sock
+}
 system()
 })()
