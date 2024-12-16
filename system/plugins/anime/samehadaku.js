@@ -58,7 +58,7 @@ ${latest
           )
           .join("\n");
         if (quality.length > 1) {
-          cap += "\n\n*– 乂 Download - Episode*";
+          cap += "\n\n*– 乂 Download - Episode*\n";
           for (let i of quality) {
             cap += `> *- Download ${i}*\n`;
             cap += data.download[i]
